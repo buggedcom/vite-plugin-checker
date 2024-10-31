@@ -42,8 +42,8 @@ export function translateOptions({
   resolvePluginsRelativeTo,
   rule,
   rulesdir,
-}: any) {
-  return {
+}: any, isFlatConfig: boolean) {
+  const conf = {
     allowInlineConfig: inlineConfig,
     cache,
     cacheLocation: cacheLocation || cacheFile,
@@ -56,11 +56,11 @@ export function translateOptions({
     ignorePath,
     overrideConfig: {
       env:
-        // @ts-expect-error
-        env?.reduce((obj, name) => {
-          obj[name] = true
-          return obj
-        }, {}),
+          // @ts-expect-error
+          env?.reduce((obj, name) => {
+            obj[name] = true
+            return obj
+          }, {}),
       // @ts-expect-error
       globals: global?.reduce((obj, name) => {
         if (name.endsWith(':true')) {
@@ -78,10 +78,44 @@ export function translateOptions({
     },
     overrideConfigFile: config,
     reportUnusedDisableDirectives: reportUnusedDisableDirectives
-      ? 'error'
-      : void 0,
+        ? 'error'
+        : void 0,
     resolvePluginsRelativeTo,
     rulePaths: rulesdir,
     useEslintrc: eslintrc,
+  };
+
+  if(!isFlatConfig) {
+      return conf;
   }
+
+  const flagConfigProps = [
+    'allowInlineConfig',
+    'baseConfig',
+    'cache',
+    'cacheLocation',
+    'cacheStrategy',
+    'cwd',
+    'errorOnUnmatchedPattern',
+    'fix',
+    'fixTypes',
+    'flags',
+    'globInputPaths',
+    'ignore',
+    'ignorePatterns',
+    'overrideConfig',
+    'overrideConfigFile',
+    'plugins',
+    'stats',
+    'warnIgnored',
+    'passOnNoPatterns',
+  ];
+  const keys: string[] = Object.keys(conf);
+  const filteredKeys = keys.filter((prop) => {
+    return flagConfigProps.indexOf(prop) >= 0;
+  });
+  return filteredKeys.reduce((acc, key) => {
+    acc[key] = conf[key]
+    return acc;
+  }, {});
 }

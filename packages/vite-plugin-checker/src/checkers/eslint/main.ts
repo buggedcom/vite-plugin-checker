@@ -46,7 +46,7 @@ const createDiagnostic: CreateDiagnostic<'eslint'> = (pluginConfig) => {
         'Using `--fix` in `config.eslint.lintCommand` is not allowed in vite-plugin-checker, you could using `--fix` with editor.',
       )
 
-      const translatedOptions = translateOptions(options) as ESLint.Options
+      const translatedOptions = translateOptions(options, pluginConfig.eslint.useFlatConfig) as ESLint.Options
 
       const logLevel = (() => {
         if (typeof pluginConfig.eslint !== 'object') return undefined
@@ -73,9 +73,7 @@ const createDiagnostic: CreateDiagnostic<'eslint'> = (pluginConfig) => {
           shouldUseFlatConfig,
         } = require('eslint/use-at-your-own-risk')
         if (shouldUseFlatConfig?.()) {
-          eslint = new FlatESLint({
-            cwd: root,
-          })
+          eslint = new FlatESLint(eslintOptions)
         } else {
           throw Error(
             'Please upgrade your eslint to latest version to use `useFlatConfig` option.',
